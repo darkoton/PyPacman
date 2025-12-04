@@ -1,4 +1,5 @@
 import pygame
+import math
 
 
 class Pacman:
@@ -13,7 +14,7 @@ class Pacman:
 
         # self.map_coordinate = map_coordinate
         # self.pacman_coordinate = pacman_coordinate
-        self.direction = "right"
+        self.direction = [1, 0]
         self.x_coordinate, self.y_coordinate = (
             self.spawn_coords[0] * settings.SIZE + settings.SIZE / 2,
             self.spawn_coords[1] * settings.SIZE + settings.SIZE / 2,
@@ -24,21 +25,35 @@ class Pacman:
             self.screen,
             (238, 210, 53),
             (self.x_coordinate, self.y_coordinate),
-            self.size / 2,
+            self.settings.SIZE / 2,
         )
 
     def move_pacman(self):
-        if self.direction == "right":
-            self.x_coordinate += self.speed
-        elif self.direction == "left":
-            self.x_coordinate -= self.speed
-        elif self.direction == "up":
-            self.y_coordinate -= self.speed
-        elif self.direction == "down":
-            self.y_coordinate += self.speed
+        self.x_coordinate += self.speed * self.direction[0]
+        self.y_coordinate += self.speed * self.direction[1]
 
     def rotate_pacman(self, direction):
-        self.direction = direction
+        if direction == "right":
+            self.direction[0] = 1
+            self.direction[1] = 0
+        elif direction == "left":
+            self.direction[0] = -1
+            self.direction[1] = 0
+        elif direction == "up":
+            self.direction[1] = -1
+            self.direction[0] = 0
+        elif direction == "down":
+            self.direction[1] = 1
+            self.direction[0] = 0
 
-    def get_coordinate_pacman():
-        pass
+    def get_coordinate_pacman(self):
+        return (
+            math.floor(
+                (self.x_coordinate - self.settings.SIZE / 2 * self.direction[0])
+                / self.settings.SIZE
+            ),
+            math.floor(
+                (self.y_coordinate - self.settings.SIZE / 2 * self.direction[1])
+                / self.settings.SIZE
+            ),
+        )

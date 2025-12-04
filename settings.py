@@ -3,3 +3,4 @@ class Settings:
     WIDTH = 28 * SIZE  # 28
     HEIGHT = 31 * SIZE  # 31
     BG_COLOR = (0, 0, 0)
+    FONT_SIZE = 15
