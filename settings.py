@@ -4,3 +4,5 @@ class Settings:
     HEIGHT = 31 * SIZE  # 31
     BG_COLOR = (0, 0, 0)
     FONT_SIZE = 15
+    grid = False
+    devtools = False

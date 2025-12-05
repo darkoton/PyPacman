@@ -94,6 +94,25 @@ class Map:
                 if symbol in self.elements:
                     self.elements[symbol](x, y)
 
+                if self.settings.grid:
+                    pygame.draw.rect(
+                        self.screen,
+                        (255, 0, 50),
+                        pygame.Rect(
+                            x * self.settings.SIZE,
+                            y * self.settings.SIZE,
+                            self.settings.SIZE,
+                            self.settings.SIZE,
+                        ),
+                        1,
+                    )
+                    order = self.settings.font["6"].render(
+                        f"{x},{y}", 1, (255, 255, 255)
+                    )
+                    self.screen.blit(
+                        order, (x * self.settings.SIZE, y * self.settings.SIZE)
+                    )
+
     def get_element_by_coords(self, coords):
         return self.map[coords[1]][coords[0]]
 

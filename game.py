@@ -8,16 +8,19 @@ from devtools import Devtools
 class Game:
     def __init__(self, settings, screen):
         self.settings = settings
+        self.settings.font = {
+            "6": pygame.font.Font("./resources/PressStart2P-Regular.ttf", 6),
+            "15": pygame.font.Font("./resources/PressStart2P-Regular.ttf", 15),
+        }
+
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.score = 0
 
         self.pacman = Pacman(settings, screen)
         self.map = Map(settings, screen)
-        self.font = pygame.font.Font("./resources/PressStart2P-Regular.ttf", 15)
 
-        self.devtools = Devtools(settings, screen, self.font)
-        self.showDevtools = False
+        self.devtools = Devtools(settings, screen)
 
         self.pause = False
 
@@ -33,7 +36,9 @@ class Game:
                     running = False
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_F12:
-                        self.showDevtools = not self.showDevtools
+                        self.settings.devtools = not self.settings.devtools
+                    if event.key == pygame.K_F11:
+                        self.settings.grid = not self.settings.grid
                     if event.key == pygame.K_SPACE:
                         self.pause = not self.pause
 
@@ -55,7 +60,7 @@ class Game:
         self.map.draw_map()
         self.pacman.draw_pacman()
 
-        if self.showDevtools:
+        if self.settings.devtools:
             self.devtools.draw_info(
                 [
                     f"Next element: {self.get_next_map_element()}",
@@ -63,6 +68,7 @@ class Game:
                     f"Pause: {self.pause}",
                     f"Pacman coords: {self.pacman.get_coordinate_pacman()}",
                     f"Score: {self.score}",
+                    f"Grid: {self.settings.grid}",
                 ]
             )
 
