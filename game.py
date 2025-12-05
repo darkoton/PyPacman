@@ -42,6 +42,11 @@ class Game:
             self.collision_with_wall()
             if not self.collision_with_wall() and not self.pause:
                 self.pacman.move_pacman()
+
+            if self.collision_with_dot():
+                self.map.remove_item(self.pacman.get_coordinate_pacman())
+                self.score += 1
+
             # time.sleep(0.1)
             self.clock.tick(60)
 
@@ -56,6 +61,8 @@ class Game:
                     f"Next element: {self.get_next_map_element()}",
                     f"Direction: {self.pacman.direction}",
                     f"Pause: {self.pause}",
+                    f"Pacman coords: {self.pacman.get_coordinate_pacman()}",
+                    f"Score: {self.score}",
                 ]
             )
 
@@ -65,19 +72,19 @@ class Game:
         self.score = 0
 
     def command_from_keyboard(self, keys):
-        if (
-            abs(
-                self.pacman.x_coordinate / self.settings.SIZE
-                - self.pacman.get_coordinate_pacman()[0]
-            )
-            != 0.5
-            or abs(
-                self.pacman.y_coordinate / self.settings.SIZE
-                - self.pacman.get_coordinate_pacman()[1]
-            )
-            != 0.5
-        ):
-            return
+        # if (
+        #     abs(
+        #         self.pacman.x_coordinate / self.settings.SIZE
+        #         - self.pacman.get_coordinate_pacman()[0]
+        #     )
+        #     != 0.5
+        #     or abs(
+        #         self.pacman.y_coordinate / self.settings.SIZE
+        #         - self.pacman.get_coordinate_pacman()[1]
+        #     )
+        #     != 0.5
+        # ):
+        #     return
 
         if keys[pygame.K_w] or keys[pygame.K_UP]:
             self.pacman.rotate_pacman("up")
@@ -106,6 +113,14 @@ class Game:
 
     def collision_with_wall(self):
         if self.get_next_map_element() == "#":
+            return True
+        else:
+            return False
+
+    def collision_with_dot(self):
+        pacman_coords = self.pacman.get_coordinate_pacman()
+
+        if self.map.get_element_by_coords(pacman_coords) == ".":
             return True
         else:
             return False

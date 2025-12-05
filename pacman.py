@@ -25,7 +25,7 @@ class Pacman:
             self.screen,
             (238, 210, 53),
             (self.x_coordinate, self.y_coordinate),
-            self.settings.SIZE / 2,
+            self.size / 2,
         )
 
     def move_pacman(self):
