@@ -9,3 +9,4 @@ class Settings:
     fps = 60
     speed = 125
     ghost_overview = 15
+    ghost_brain_power = 50  # max 100, min 0

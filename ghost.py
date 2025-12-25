@@ -2,22 +2,31 @@ import pygame
 import math
 
 from entity import Entity
-import settings
 
 
 class Ghost(Entity):
 
-    def __init__(self, settings, screen):
-        super().__init__(settings, (25, 5))
+    def __init__(
+        self,
+        settings,
+        screen,
+        color=(1, 120, 1),
+        spawn_coords=(25, 5),
+        aggressive_point=[13, 13],
+        name="Ghost",
+    ):
+        super().__init__(settings, spawn_coords)
+
+        self.name = name
 
         self.screen = screen
         self.speed = settings.SIZE
         self.size = 25
 
         self.direction = [1, 0]
-        self.color = (1, 120, 1)
+        self.color = color
 
-        self.aggressivePoint = [21, 20]
+        self.aggressive_point = aggressive_point
 
         self.see_pacman = False
         self.see_pacman_color = (20, 200, 200, 100)
@@ -99,50 +108,50 @@ class Ghost(Entity):
         #     self.screen, "green", (self.x_coordinate, self.y_coordinate), 10
         # )
 
-        pygame.draw.rect(
-            self.screen,
-            self.color,
-            pygame.Rect(
-                self.aggressivePoint[0] * self.settings.SIZE,
-                self.aggressivePoint[1] * self.settings.SIZE,
-                self.settings.SIZE,
-                self.settings.SIZE,
-            ),
-        )
+        # pygame.draw.rect(
+        #     self.screen,
+        #     self.color,
+        #     pygame.Rect(
+        #         self.aggressive_point[0] * self.settings.SIZE,
+        #         self.aggressive_point[1] * self.settings.SIZE,
+        #         self.settings.SIZE,
+        #         self.settings.SIZE,
+        #     ),
+        # )
 
-        visor_surf = pygame.Surface(
-            (self.settings.WIDTH, self.settings.HEIGHT), pygame.SRCALPHA
-        )
+        # visor_surf = pygame.Surface(
+        #     (self.settings.WIDTH, self.settings.HEIGHT), pygame.SRCALPHA
+        # )
 
-        pygame.draw.rect(
-            visor_surf,
-            self.see_pacman_color if self.see_pacman else (255, 0, 0, 100),
-            pygame.Rect(
-                round(
-                    self.x_coordinate
-                    - self.settings.SIZE / 2
-                    - math.floor(self.settings.ghost_overview / 2) * self.settings.SIZE
-                ),
-                round(
-                    self.y_coordinate
-                    - self.settings.SIZE / 2
-                    - math.floor(self.settings.ghost_overview / 2) * self.settings.SIZE
-                ),
-                self.settings.ghost_overview * self.settings.SIZE,
-                self.settings.ghost_overview * self.settings.SIZE,
-            ),
-        )
-        self.screen.blit(
-            visor_surf,
-            (0, 0),
-        )
+        # pygame.draw.rect(
+        #     visor_surf,
+        #     self.see_pacman_color if self.see_pacman else (255, 0, 0, 100),
+        #     pygame.Rect(
+        #         round(
+        #             self.x_coordinate
+        #             - self.settings.SIZE / 2
+        #             - math.floor(self.settings.ghost_overview / 2) * self.settings.SIZE
+        #         ),
+        #         round(
+        #             self.y_coordinate
+        #             - self.settings.SIZE / 2
+        #             - math.floor(self.settings.ghost_overview / 2) * self.settings.SIZE
+        #         ),
+        #         self.settings.ghost_overview * self.settings.SIZE,
+        #         self.settings.ghost_overview * self.settings.SIZE,
+        #     ),
+        # )
+        # self.screen.blit(
+        #     visor_surf,
+        #     (0, 0),
+        # )
 
     def determine_directions(
         self,
         coords=None,
     ):
         if coords is None:
-            coords = self.aggressivePoint
+            coords = self.aggressive_point
 
         x, y = self.get_coordinate()
         target_x, target_y = coords

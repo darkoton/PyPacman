@@ -7,6 +7,33 @@ from map import Map
 from devtools import Devtools
 import math
 
+ghosts_data = [
+    {
+        "name": "Blinky",
+        "color": (255, 0, 0),
+        "spawn_coords": (15, 11),
+        "aggressive_point": (24, -5),
+    },
+    {
+        "name": "Pinky",
+        "color": (255, 185, 255),
+        "spawn_coords": (12, 11),
+        "aggressive_point": (4, -5),
+    },
+    {
+        "name": "Clyde",
+        "color": (255, 185, 81),
+        "spawn_coords": (13, 11),
+        "aggressive_point": (0, 31),
+    },
+    {
+        "name": "Inky",
+        "color": (0, 255, 255),
+        "spawn_coords": (12, 11),
+        "aggressive_point": (27, 31),
+    },
+]
+
 
 class Game:
     def __init__(self, settings, screen):
@@ -21,8 +48,21 @@ class Game:
         self.score = 0
 
         self.pacman = Pacman(settings, screen)
-        self.ghost = Ghost(settings, screen)
         self.map = Map(settings, screen)
+
+        self.ghosts = []
+
+        for ghost in ghosts_data:
+            self.ghosts.append(
+                Ghost(
+                    self.settings,
+                    self.screen,
+                    ghost["color"],
+                    ghost["spawn_coords"],
+                    ghost["aggressive_point"],
+                    ghost["name"],
+                )
+            )
 
         self.devtools = Devtools(settings, screen)
 
@@ -53,42 +93,43 @@ class Game:
                 if not self.collision_with_wall(self.pacman):
                     self.pacman.move()
 
-                check_rotate = self.can_rotate(self.ghost, True)
-                available_directions = [
-                    dir for dir, can_move in check_rotate.items() if can_move
-                ]
+                for ghost in self.ghosts:
+                    check_rotate = self.can_rotate(ghost, True)
+                    available_directions = [
+                        dir for dir, can_move in check_rotate.items() if can_move
+                    ]
 
-                if any(check_rotate.values()):
+                    if any(check_rotate.values()):
 
-                    if self.ghost.see_pacman:
-                        ghost_next_directions = self.ghost.determine_directions(
-                            self.pacman.get_coordinate()
-                        )
-                    else:
-                        ghost_next_directions = self.ghost.determine_directions()
-
-                    if int(random() * 100) > 66:
-                        if check_rotate[ghost_next_directions[0]]:
-                            self.ghost.rotate(ghost_next_directions[0])
-                        elif check_rotate[ghost_next_directions[1]]:
-                            self.ghost.rotate(ghost_next_directions[1])
+                        if ghost.see_pacman:
+                            ghost_next_directions = ghost.determine_directions(
+                                self.pacman.get_coordinate()
+                            )
                         else:
-                            self.ghost.rotate(available_directions[0])
+                            ghost_next_directions = ghost.determine_directions()
 
+                        if int(random() * 100) < self.settings.ghost_brain_power:
+                            if check_rotate[ghost_next_directions[0]]:
+                                ghost.rotate(ghost_next_directions[0])
+                            elif check_rotate[ghost_next_directions[1]]:
+                                ghost.rotate(ghost_next_directions[1])
+                            else:
+                                ghost.rotate(available_directions[0])
+
+                        else:
+                            ghost.rotate(
+                                available_directions[
+                                    math.floor(len(available_directions) * random())
+                                ]
+                            )
+
+                    if not self.collision_with_wall(ghost):
+                        ghost.move()
+
+                    if self.collision_with_visor(ghost):
+                        ghost.see_pacman = True
                     else:
-                        self.ghost.rotate(
-                            available_directions[
-                                math.floor(len(available_directions) * random())
-                            ]
-                        )
-
-                if not self.collision_with_wall(self.ghost):
-                    self.ghost.move()
-
-                if self.collision_with_visor():
-                    self.ghost.see_pacman = True
-                else:
-                    self.ghost.see_pacman = False
+                        ghost.see_pacman = False
 
                 if self.collision_pacman_with_dot():
                     self.map.remove_item(self.pacman.get_coordinate())
@@ -101,7 +142,9 @@ class Game:
         self.screen.fill(self.settings.BG_COLOR)
         self.map.draw_map()
         self.pacman.draw_pacman()
-        self.ghost.draw_ghost()
+
+        for ghost in self.ghosts:
+            ghost.draw_ghost()
 
         if self.settings.devtools:
             self.devtools.draw_info(
@@ -231,9 +274,10 @@ class Game:
         else:
             return result[direction]
 
-    def collision_with_visor(self):
+    def collision_with_visor(self, ghost):
         pacman_coords = (self.pacman.x_coordinate, self.pacman.y_coordinate)
-        ghost_coords = (self.ghost.x_coordinate, self.ghost.y_coordinate)
+
+        ghost_coords = (ghost.x_coordinate, ghost.y_coordinate)
 
         visor_left = round(
             ghost_coords[0]
