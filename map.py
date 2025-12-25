@@ -27,7 +27,7 @@ class Map:
             "######.##          ##.######",
             "######.## ###--### ##.######",
             "######.## #      # ##.######",
-            "      .   #      #   .      ",
+            "######.   #      #   .######",
             "######.## #      # ##.######",
             "######.## ######## ##.######",
             "######.##          ##.######",
@@ -114,6 +114,9 @@ class Map:
                     )
 
     def get_element_by_coords(self, coords):
+        if coords[1] >= len(self.map) or coords[0] >= len(self.map[coords[1]]):
+            return None
+
         return self.map[coords[1]][coords[0]]
 
     def remove_item(self, coords):

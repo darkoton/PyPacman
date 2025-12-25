@@ -5,11 +5,11 @@ class Devtools:
     def __init__(self, settings, screen):
         self.settings = settings
         self.screen = screen
-        self.surface = pygame.Surface((400, 200), pygame.SRCALPHA)
+        self.surface = pygame.Surface((400, settings.HEIGHT), pygame.SRCALPHA)
 
     def draw_info(self, items: list):
         self.surface.fill((0, 0, 0, 0))
-        rect_body = pygame.Rect(0, 0, 400, 200)
+        rect_body = pygame.Rect(0, 0, 400, len(items) * self.settings.FONT_SIZE + 20)
 
         pygame.draw.rect(self.surface, pygame.Color(255, 255, 255, 150), rect_body)
 

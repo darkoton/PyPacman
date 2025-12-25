@@ -6,3 +6,5 @@ class Settings:
     FONT_SIZE = 15
     grid = False
     devtools = False
+    fps = 60
+    speed = 125

@@ -44,7 +44,7 @@ class Game:
 
             self.draw_game()
             self.command_from_keyboard(pygame.key.get_pressed())
-            self.collision_with_wall()
+            # not self.collision_with_wall() and
             if not self.collision_with_wall() and not self.pause:
                 self.pacman.move_pacman()
 
@@ -52,8 +52,8 @@ class Game:
                 self.map.remove_item(self.pacman.get_coordinate_pacman())
                 self.score += 1
 
-            # time.sleep(0.1)
-            self.clock.tick(60)
+            pygame.time.wait(self.settings.speed)
+            self.clock.tick(self.settings.fps)
 
     def draw_game(self):
         self.screen.fill(self.settings.BG_COLOR)
@@ -65,10 +65,17 @@ class Game:
                 [
                     f"Next element: {self.get_next_map_element()}",
                     f"Direction: {self.pacman.direction}",
+                    f"Direction word: {self.pacman.directionWord}",
                     f"Pause: {self.pause}",
-                    f"Pacman coords: {self.pacman.get_coordinate_pacman()}",
+                    "Pacman:",
+                    f"  coords: {self.pacman.get_coordinate_pacman()}",
+                    f"  top: {self.pacman.top}",
+                    f"  right: {self.pacman.right}",
+                    f"  bottom: {self.pacman.bottom}",
+                    f"  left: {self.pacman.left}",
                     f"Score: {self.score}",
                     f"Grid: {self.settings.grid}",
+                    f"FPS: {self.settings.fps}",
                 ]
             )
 
@@ -92,14 +99,19 @@ class Game:
         # ):
         #     return
 
+        direction = self.pacman.directionWord
+
         if keys[pygame.K_w] or keys[pygame.K_UP]:
-            self.pacman.rotate_pacman("up")
+            direction = "up"
         if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-            self.pacman.rotate_pacman("down")
+            direction = "down"
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            self.pacman.rotate_pacman("right")
+            direction = "right"
         if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            self.pacman.rotate_pacman("left")
+            direction = "left"
+
+        if self.can_rotate(direction):
+            self.pacman.rotate_pacman(direction)
 
     def game_over(self):
         self.score = 0
@@ -126,7 +138,38 @@ class Game:
     def collision_with_dot(self):
         pacman_coords = self.pacman.get_coordinate_pacman()
 
-        if self.map.get_element_by_coords(pacman_coords) == ".":
+        if (
+            self.map.get_element_by_coords(pacman_coords) == "."
+            or self.map.get_element_by_coords(pacman_coords) == "o"
+        ):
             return True
         else:
             return False
+
+    def can_rotate(self, direction):
+        pacman_coords = self.pacman.get_coordinate_pacman()
+
+        result = {
+            "up": False,
+            "down": False,
+            "left": False,
+            "right": False,
+        }
+
+        offsets = {
+            "up": (0, -1),
+            "down": (0, 1),
+            "left": (-1, 0),
+            "right": (1, 0),
+        }
+
+        for dir_name in result:
+            dx, dy = offsets[dir_name]
+            x, y = pacman_coords
+            next_coords = (x + dx, y + dy)
+
+            element = self.map.get_element_by_coords(next_coords)
+
+            result[dir_name] = element != "#"
+
+        return result[direction]
