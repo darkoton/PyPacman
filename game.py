@@ -46,10 +46,10 @@ class Game:
             self.command_from_keyboard(pygame.key.get_pressed())
             # not self.collision_with_wall() and
             if not self.collision_with_wall() and not self.pause:
-                self.pacman.move_pacman()
+                self.pacman.move()
 
             if self.collision_with_dot():
-                self.map.remove_item(self.pacman.get_coordinate_pacman())
+                self.map.remove_item(self.pacman.get_coordinate())
                 self.score += 1
 
             pygame.time.wait(self.settings.speed)
@@ -88,19 +88,17 @@ class Game:
         # if (
         #     abs(
         #         self.pacman.x_coordinate / self.settings.SIZE
-        #         - self.pacman.get_coordinate_pacman()[0]
+        #         - self.pacman.get_coordinate()[0]
         #     )
         #     != 0.5
         #     or abs(
         #         self.pacman.y_coordinate / self.settings.SIZE
-        #         - self.pacman.get_coordinate_pacman()[1]
+        #         - self.pacman.get_coordinate()[1]
         #     )
         #     != 0.5
         # ):
         #     return
-
         direction = self.pacman.directionWord
-
         if keys[pygame.K_w] or keys[pygame.K_UP]:
             direction = "up"
         if keys[pygame.K_s] or keys[pygame.K_DOWN]:
@@ -111,7 +109,7 @@ class Game:
             direction = "left"
 
         if self.can_rotate(direction):
-            self.pacman.rotate_pacman(direction)
+            self.pacman.rotate(direction)
 
     def game_over(self):
         self.score = 0
@@ -120,7 +118,7 @@ class Game:
         pass
 
     def get_next_map_element(self):
-        pacman_coords = self.pacman.get_coordinate_pacman()
+        pacman_coords = self.pacman.get_coordinate()
 
         next_coords = (
             pacman_coords[0] + 1 * self.pacman.direction[0],
@@ -136,7 +134,7 @@ class Game:
             return False
 
     def collision_with_dot(self):
-        pacman_coords = self.pacman.get_coordinate_pacman()
+        pacman_coords = self.pacman.get_coordinate()
 
         if (
             self.map.get_element_by_coords(pacman_coords) == "."
@@ -147,7 +145,7 @@ class Game:
             return False
 
     def can_rotate(self, direction):
-        pacman_coords = self.pacman.get_coordinate_pacman()
+        pacman_coords = self.pacman.get_coordinate()
 
         result = {
             "up": False,
