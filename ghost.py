@@ -7,17 +7,16 @@ from entity import Entity
 class Ghost(Entity):
 
     def __init__(self, settings, screen):
-        super().__init__(settings, (13, 11))
+        super().__init__(settings, (25, 5))
 
         self.screen = screen
         self.speed = settings.SIZE
         self.size = 25
 
         self.direction = [1, 0]
-        self.directionWord = "right"
         self.color = (1, 120, 1)
 
-        self.aggressivePoint = (50, -5)
+        self.aggressivePoint = [13, 11]
 
     def draw_ghost(self):
         ghost_color = self.color
@@ -103,35 +102,38 @@ class Ghost(Entity):
             ),
         )
 
-    def determine_directions(self):
+    def determine_directions(
+        self,
+        coords=None,
+    ):
+        if coords is None:
+            coords = self.aggressivePoint
+
         x, y = self.get_coordinate()
-        target_x, target_y = self.aggressivePoint
+        target_x, target_y = coords
 
         dx = target_x - x
         dy = target_y - y
 
         directions = []
 
-        # Основное направление — по большей разнице
         if abs(dx) > abs(dy):
-            if dx > 0:
+            if dx >= 0:
                 directions.append("right")
             else:
                 directions.append("left")
 
-            # Второстепенное направление
-            if dy > 0:
+            if dy >= 0:
                 directions.append("down")
             elif dy < 0:
                 directions.append("up")
         else:
-            if dy > 0:
+            if dy >= 0:
                 directions.append("down")
             else:
                 directions.append("up")
 
-            # Второстепенное направление
-            if dx > 0:
+            if dx >= 0:
                 directions.append("right")
             elif dx < 0:
                 directions.append("left")

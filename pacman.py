@@ -14,7 +14,6 @@ class Pacman(Entity):
         self.size = 25
 
         self.direction = [1, 0]
-        self.directionWord = "right"
 
     # Тут я зробив з допомогою ИИ
     def draw_pacman(self):

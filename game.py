@@ -46,16 +46,29 @@ class Game:
 
             self.draw_game()
             self.command_from_keyboard(pygame.key.get_pressed())
+
             if not self.pause:
                 if not self.collision_with_wall(self.pacman):
                     self.pacman.move()
 
+                check_rotate = self.can_rotate(self.ghost, True)
+                available_directions = [
+                    dir for dir, can_move in check_rotate.items() if can_move
+                ]
+                if any(check_rotate.values()):
+                    ghost_next_directions = self.ghost.determine_directions()
+                    if check_rotate[ghost_next_directions[0]]:
+                        self.ghost.rotate(ghost_next_directions[0])
+                    elif check_rotate[ghost_next_directions[1]]:
+                        self.ghost.rotate(ghost_next_directions[1])
+                    else:
+                        self.ghost.rotate(available_directions[0])
                 if not self.collision_with_wall(self.ghost):
                     self.ghost.move()
 
-            if self.collision_pacman_with_dot():
-                self.map.remove_item(self.pacman.get_coordinate())
-                self.score += 1
+                if self.collision_pacman_with_dot():
+                    self.map.remove_item(self.pacman.get_coordinate())
+                    self.score += 1
 
             pygame.time.wait(self.settings.speed)
             self.clock.tick(self.settings.fps)
@@ -91,19 +104,6 @@ class Game:
         self.score = 0
 
     def command_from_keyboard(self, keys):
-        # if (
-        #     abs(
-        #         self.pacman.x_coordinate / self.settings.SIZE
-        #         - self.pacman.get_coordinate()[0]
-        #     )
-        #     != 0.5
-        #     or abs(
-        #         self.pacman.y_coordinate / self.settings.SIZE
-        #         - self.pacman.get_coordinate()[1]
-        #     )
-        #     != 0.5
-        # ):
-        #     return
         direction = self.pacman.directionWord
         if keys[pygame.K_w] or keys[pygame.K_UP]:
             direction = "up"
@@ -114,7 +114,7 @@ class Game:
         if keys[pygame.K_a] or keys[pygame.K_LEFT]:
             direction = "left"
 
-        if self.can_rotate(self.pacman, direction):
+        if self.can_rotate(self.pacman, False, direction):
             self.pacman.rotate(direction)
 
     def game_over(self):
@@ -153,11 +153,18 @@ class Game:
         else:
             return False
 
-    def can_rotate(self, entity=None, direction=None):
+    def can_rotate(self, entity=None, isGhost=False, direction=None):
         if entity is None:
             entity = self.pacman
 
         entity_coords = entity.get_coordinate()
+
+        alternate = {
+            "up": "down",
+            "down": "up",
+            "left": "right",
+            "right": "left",
+        }
 
         result = {
             "up": False,
@@ -181,6 +188,19 @@ class Game:
             element = self.map.get_element_by_coords(next_coords)
 
             result[dir_name] = element != "#"
+
+        if isGhost:
+            if direction is not None:
+                if direction == "up":
+                    result["down"] = False
+                elif direction == "down":
+                    result["up"] = False
+                elif direction == "left":
+                    result["right"] = False
+                elif direction == "right":
+                    result["left"] = False
+            else:
+                result[alternate[entity.directionWord]] = False
 
         if direction is None:
             return result
