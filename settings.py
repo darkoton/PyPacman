@@ -8,3 +8,4 @@ class Settings:
     devtools = False
     fps = 60
     speed = 125
+    ghost_overview = 15

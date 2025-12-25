@@ -2,6 +2,7 @@ import pygame
 import math
 
 from entity import Entity
+import settings
 
 
 class Ghost(Entity):
@@ -16,7 +17,10 @@ class Ghost(Entity):
         self.direction = [1, 0]
         self.color = (1, 120, 1)
 
-        self.aggressivePoint = [13, 11]
+        self.aggressivePoint = [21, 20]
+
+        self.see_pacman = False
+        self.see_pacman_color = (20, 200, 200, 100)
 
     def draw_ghost(self):
         ghost_color = self.color
@@ -91,6 +95,10 @@ class Ghost(Entity):
             pupil_radius,
         )
 
+        # pygame.draw.circle(
+        #     self.screen, "green", (self.x_coordinate, self.y_coordinate), 10
+        # )
+
         pygame.draw.rect(
             self.screen,
             self.color,
@@ -100,6 +108,33 @@ class Ghost(Entity):
                 self.settings.SIZE,
                 self.settings.SIZE,
             ),
+        )
+
+        visor_surf = pygame.Surface(
+            (self.settings.WIDTH, self.settings.HEIGHT), pygame.SRCALPHA
+        )
+
+        pygame.draw.rect(
+            visor_surf,
+            self.see_pacman_color if self.see_pacman else (255, 0, 0, 100),
+            pygame.Rect(
+                round(
+                    self.x_coordinate
+                    - self.settings.SIZE / 2
+                    - math.floor(self.settings.ghost_overview / 2) * self.settings.SIZE
+                ),
+                round(
+                    self.y_coordinate
+                    - self.settings.SIZE / 2
+                    - math.floor(self.settings.ghost_overview / 2) * self.settings.SIZE
+                ),
+                self.settings.ghost_overview * self.settings.SIZE,
+                self.settings.ghost_overview * self.settings.SIZE,
+            ),
+        )
+        self.screen.blit(
+            visor_surf,
+            (0, 0),
         )
 
     def determine_directions(

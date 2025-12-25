@@ -18,8 +18,8 @@ class Entity:
 
         self.left = self.x_coordinate - self.settings.SIZE / 2
         self.top = self.y_coordinate - self.settings.SIZE / 2
-        self.right = settings.WIDTH - self.x_coordinate + self.settings.SIZE / 2
-        self.bottom = self.y_coordinate + self.settings.SIZE / 2
+        self.right = self.settings.WIDTH - self.left - self.settings.SIZE
+        self.bottom = self.settings.HEIGHT - self.top - self.settings.SIZE
 
     def move(self):
         self.x_coordinate += self.speed * self.direction[0]
@@ -27,8 +27,8 @@ class Entity:
 
         self.left = self.x_coordinate - self.settings.SIZE / 2
         self.top = self.y_coordinate - self.settings.SIZE / 2
-        self.right = self.x_coordinate + self.settings.SIZE / 2
-        self.bottom = self.y_coordinate + self.settings.SIZE / 2
+        self.right = self.settings.WIDTH - self.left - self.settings.SIZE
+        self.bottom = self.settings.HEIGHT - self.top - self.settings.SIZE
 
     def rotate(self, direction):
         self.directionWord = direction

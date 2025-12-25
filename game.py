@@ -1,9 +1,11 @@
+from random import random
 import pygame
 
 from pacman import Pacman
 from ghost import Ghost
 from map import Map
 from devtools import Devtools
+import math
 
 
 class Game:
@@ -55,16 +57,38 @@ class Game:
                 available_directions = [
                     dir for dir, can_move in check_rotate.items() if can_move
                 ]
+
                 if any(check_rotate.values()):
-                    ghost_next_directions = self.ghost.determine_directions()
-                    if check_rotate[ghost_next_directions[0]]:
-                        self.ghost.rotate(ghost_next_directions[0])
-                    elif check_rotate[ghost_next_directions[1]]:
-                        self.ghost.rotate(ghost_next_directions[1])
+
+                    if self.ghost.see_pacman:
+                        ghost_next_directions = self.ghost.determine_directions(
+                            self.pacman.get_coordinate()
+                        )
                     else:
-                        self.ghost.rotate(available_directions[0])
+                        ghost_next_directions = self.ghost.determine_directions()
+
+                    if int(random() * 100) > 66:
+                        if check_rotate[ghost_next_directions[0]]:
+                            self.ghost.rotate(ghost_next_directions[0])
+                        elif check_rotate[ghost_next_directions[1]]:
+                            self.ghost.rotate(ghost_next_directions[1])
+                        else:
+                            self.ghost.rotate(available_directions[0])
+
+                    else:
+                        self.ghost.rotate(
+                            available_directions[
+                                math.floor(len(available_directions) * random())
+                            ]
+                        )
+
                 if not self.collision_with_wall(self.ghost):
                     self.ghost.move()
+
+                if self.collision_with_visor():
+                    self.ghost.see_pacman = True
+                else:
+                    self.ghost.see_pacman = False
 
                 if self.collision_pacman_with_dot():
                     self.map.remove_item(self.pacman.get_coordinate())
@@ -87,7 +111,7 @@ class Game:
                     f"Direction word: {self.pacman.directionWord}",
                     f"Pause: {self.pause}",
                     "Pacman:",
-                    f"  coords: {self.pacman.get_coordinate_pacman()}",
+                    f"  coords: {self.pacman.get_coordinate()}",
                     f"  top: {self.pacman.top}",
                     f"  right: {self.pacman.right}",
                     f"  bottom: {self.pacman.bottom}",
@@ -137,7 +161,8 @@ class Game:
         return next_element_map
 
     def collision_with_wall(self, entity=None):
-        if self.get_next_map_element(entity) == "#":
+        next_el = self.get_next_map_element(entity)
+        if next_el == "#" or next_el == "-":
             return True
         else:
             return False
@@ -187,22 +212,48 @@ class Game:
 
             element = self.map.get_element_by_coords(next_coords)
 
-            result[dir_name] = element != "#"
+            result[dir_name] = element != "#" and element != "-"
 
         if isGhost:
             if direction is not None:
-                if direction == "up":
+                if direction == "up" or direction == "down":
                     result["down"] = False
-                elif direction == "down":
                     result["up"] = False
-                elif direction == "left":
+                elif direction == "left" or direction == "right":
                     result["right"] = False
-                elif direction == "right":
                     result["left"] = False
             else:
+                # result[entity.directionWord] = False
                 result[alternate[entity.directionWord]] = False
 
         if direction is None:
             return result
         else:
             return result[direction]
+
+    def collision_with_visor(self):
+        pacman_coords = (self.pacman.x_coordinate, self.pacman.y_coordinate)
+        ghost_coords = (self.ghost.x_coordinate, self.ghost.y_coordinate)
+
+        visor_left = round(
+            ghost_coords[0]
+            - self.settings.SIZE / 2
+            - math.floor(self.settings.ghost_overview / 2) * self.settings.SIZE
+        )
+        visor_right = visor_left + self.settings.ghost_overview * self.settings.SIZE
+        visor_top = round(
+            ghost_coords[1]
+            - self.settings.SIZE / 2
+            - math.floor(self.settings.ghost_overview / 2) * self.settings.SIZE
+        )
+        visor_down = visor_top + self.settings.ghost_overview * self.settings.SIZE
+
+        if (
+            pacman_coords[0] > visor_left
+            and pacman_coords[0] < visor_right
+            and pacman_coords[1] > visor_top
+            and pacman_coords[1] < visor_down
+        ):
+            return True
+        else:
+            return False

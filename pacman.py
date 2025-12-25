@@ -15,10 +15,18 @@ class Pacman(Entity):
 
         self.direction = [1, 0]
 
+        self.mouth_max = math.pi / 4  # максимум — 45°
+        self.mouth_min = math.pi / 16  # минимум — 11°
+        self.mouth_angle = self.mouth_max
+        self.mouth_speed = 0.03
+        self.mouth_opening = False
+
     # Тут я зробив з допомогою ИИ
     def draw_pacman(self):
         r = self.size / 2
-        mouth_angle = math.pi / 4  # угол рта
+        self.mouth_angle = self.mouth_min + (self.mouth_max - self.mouth_min) * (
+            0.5 + 0.5 * math.sin(pygame.time.get_ticks() * 0.01)
+        )
 
         dx, dy = self.direction
         angle_center = math.atan2(dy, dx)
@@ -34,7 +42,11 @@ class Pacman(Entity):
         points = [center]
         num_points = 20  # больше точек = плавнее
         for i in range(num_points + 1):
-            angle = angle_center - mouth_angle + i * (2 * mouth_angle) / num_points
+            angle = (
+                angle_center
+                - self.mouth_angle
+                + i * (2 * self.mouth_angle) / num_points
+            )
             x = center[0] + r * math.cos(angle)
             y = center[1] + r * math.sin(angle)
             points.append((x, y))
