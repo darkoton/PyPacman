@@ -4,10 +4,10 @@ import math
 
 class Entity:
 
-    def __init__(self, settings):
-        self.spawn_coords = (13, 23)
+    def __init__(self, settings, spawn_coords=(13, 23)):
+        self.spawn_coords = spawn_coords
         self.settings = settings
-        self.speed = settings.SIZE * 0.66
+        self.speed = settings.SIZE
 
         self.direction = [1, 0]
         self.directionWord = "right"
