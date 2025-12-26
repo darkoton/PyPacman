@@ -1,6 +1,7 @@
 from random import random
 import pygame
 import math
+from path import resource_path
 
 from pacman import Pacman
 from ghost import Ghost
@@ -43,15 +44,24 @@ class Game:
     def __init__(self, settings, screen):
         self.settings = settings
         self.settings.font = {
-            "6": pygame.font.Font("./resources/PressStart2P-Regular.ttf", 6),
-            "15": pygame.font.Font("./resources/PressStart2P-Regular.ttf", 15),
-            "20": pygame.font.Font("./resources/PressStart2P-Regular.ttf", 20),
-            "40": pygame.font.Font("./resources/PressStart2P-Regular.ttf", 40),
+            "6": pygame.font.Font(
+                resource_path("resources/PressStart2P-Regular.ttf"), 6
+            ),
+            "15": pygame.font.Font(
+                resource_path("resources/PressStart2P-Regular.ttf"), 15
+            ),
+            "20": pygame.font.Font(
+                resource_path("resources/PressStart2P-Regular.ttf"),
+                20,
+            ),
+            "40": pygame.font.Font(
+                resource_path("resources/PressStart2P-Regular.ttf"), 40
+            ),
         }
 
         pygame.mixer.init()
 
-        pygame.mixer.music.load("resources/soundtrack.mp3")
+        pygame.mixer.music.load(resource_path("resources/soundtrack.mp3"))
         pygame.mixer.music.set_volume(0.2)  # 0.0 – 1.0
         pygame.mixer.music.play(-1)  # loop
         pygame.mixer.music.pause()

@@ -1,0 +1,2 @@
+Збірка
+pyinstaller --clean --onefile --windowed --icon=resources\pacman.ico --add-data "resources;resources" main.pymain.py
