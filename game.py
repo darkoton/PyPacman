@@ -1,11 +1,12 @@
 from random import random
 import pygame
+import math
 
 from pacman import Pacman
 from ghost import Ghost
 from map import Map
 from devtools import Devtools
-import math
+from menu import Menu
 
 ghosts_data = [
     {
@@ -41,6 +42,8 @@ class Game:
         self.settings.font = {
             "6": pygame.font.Font("./resources/PressStart2P-Regular.ttf", 6),
             "15": pygame.font.Font("./resources/PressStart2P-Regular.ttf", 15),
+            "20": pygame.font.Font("./resources/PressStart2P-Regular.ttf", 20),
+            "40": pygame.font.Font("./resources/PressStart2P-Regular.ttf", 40),
         }
 
         self.screen = screen
@@ -51,6 +54,9 @@ class Game:
         self.map = Map(settings, screen)
 
         self.ghosts = []
+
+        self.state = "menu"
+        self.menu = Menu(settings, screen)
 
         for ghost in ghosts_data:
             self.ghosts.append(
@@ -71,9 +77,6 @@ class Game:
     def run(self):
         running = True
         while running:
-            # if self.collision_with_ghost():
-            # self.game_over()
-            #     break
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -89,7 +92,11 @@ class Game:
             self.draw_game()
             self.command_from_keyboard(pygame.key.get_pressed())
 
-            if not self.pause:
+            if self.collision_with_ghost():
+                self.game_over()
+                break
+
+            if not self.pause and self.state == "play":
                 if not self.collision_with_wall(self.pacman):
                     self.pacman.move()
 
@@ -140,29 +147,40 @@ class Game:
 
     def draw_game(self):
         self.screen.fill(self.settings.BG_COLOR)
-        self.map.draw_map()
-        self.pacman.draw_pacman()
 
-        for ghost in self.ghosts:
-            ghost.draw_ghost()
+        if self.state == "menu":
+            self.menu.draw()
+        elif self.state == "play":
+            self.map.draw_map()
+            self.pacman.draw_pacman()
 
-        if self.settings.devtools:
-            self.devtools.draw_info(
-                [
-                    f"Next element: {self.get_next_map_element(self.pacman)}",
-                    f"Direction: {self.pacman.direction}",
-                    f"Direction word: {self.pacman.directionWord}",
-                    f"Pause: {self.pause}",
-                    "Pacman:",
-                    f"  coords: {self.pacman.get_coordinate()}",
-                    f"  top: {self.pacman.top}",
-                    f"  right: {self.pacman.right}",
-                    f"  bottom: {self.pacman.bottom}",
-                    f"  left: {self.pacman.left}",
-                    f"Score: {self.score}",
-                    f"Grid: {self.settings.grid}",
-                    f"FPS: {self.settings.fps}",
-                ]
+            for ghost in self.ghosts:
+                ghost.draw_ghost()
+
+            if self.settings.devtools:
+                self.devtools.draw_info(
+                    [
+                        f"Next element: {self.get_next_map_element(self.pacman)}",
+                        f"Direction: {self.pacman.direction}",
+                        f"Direction word: {self.pacman.directionWord}",
+                        f"Pause: {self.pause}",
+                        "Pacman:",
+                        f"  coords: {self.pacman.get_coordinate()}",
+                        f"  top: {self.pacman.top}",
+                        f"  right: {self.pacman.right}",
+                        f"  bottom: {self.pacman.bottom}",
+                        f"  left: {self.pacman.left}",
+                        f"Score: {self.score}",
+                        f"Grid: {self.settings.grid}",
+                        f"FPS: {self.settings.fps}",
+                    ]
+                )
+
+            score_surf = self.settings.font["15"].render(
+                f"Score: {self.score}", False, (0, 0, 0)
+            )
+            self.screen.blit(
+                score_surf, (1 * self.settings.SIZE, 10 * self.settings.SIZE)
             )
 
         pygame.display.update()
@@ -171,18 +189,29 @@ class Game:
         self.score = 0
 
     def command_from_keyboard(self, keys):
-        direction = self.pacman.directionWord
-        if keys[pygame.K_w] or keys[pygame.K_UP]:
-            direction = "up"
-        if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-            direction = "down"
-        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            direction = "right"
-        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            direction = "left"
+        if self.state == "play":
+            direction = self.pacman.directionWord
+            if keys[pygame.K_w] or keys[pygame.K_UP]:
+                direction = "up"
+            if keys[pygame.K_s] or keys[pygame.K_DOWN]:
+                direction = "down"
+            if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+                direction = "right"
+            if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+                direction = "left"
 
-        if self.can_rotate(self.pacman, False, direction):
-            self.pacman.rotate(direction)
+            if self.can_rotate(self.pacman, False, direction):
+                self.pacman.rotate(direction)
+
+        elif self.state == "menu":
+            if keys[pygame.K_RETURN]:
+                self.state = "play"
+
+        if keys[pygame.K_ESCAPE]:
+            if self.state == "play" or self.state == "lose":
+                self.state = "menu"
+            else:
+                self.state = "play"
 
     def game_over(self):
         self.score = 0
@@ -297,6 +326,18 @@ class Game:
             and pacman_coords[0] < visor_right
             and pacman_coords[1] > visor_top
             and pacman_coords[1] < visor_down
+        ):
+            return True
+        else:
+            return False
+
+    def collision_with_ghost(self):
+        px, py = self.pacman.get_coordinate()
+
+        if any(
+            abs(gx - px) + abs(gy - py) <= 1
+            for ghost in self.ghosts
+            for gx, gy in [ghost.get_coordinate()]
         ):
             return True
         else:
