@@ -128,3 +128,6 @@ class Map:
         new_row = current_row[:x] + " " + current_row[x + 1 :]
 
         self.map[y] = new_row
+
+    def check_dots(self):
+        return any("." in row or "o" in row for row in self.map)

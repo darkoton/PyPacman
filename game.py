@@ -7,6 +7,7 @@ from ghost import Ghost
 from map import Map
 from devtools import Devtools
 from menu import Menu
+from result import Result
 
 ghosts_data = [
     {
@@ -56,7 +57,9 @@ class Game:
         self.ghosts = []
 
         self.state = "menu"
+
         self.menu = Menu(settings, screen)
+        self.result = Result(settings, screen)
 
         for ghost in ghosts_data:
             self.ghosts.append(
@@ -94,7 +97,10 @@ class Game:
 
             if self.collision_with_ghost():
                 self.game_over()
-                break
+                self.state = "lose"
+
+            if not self.map.check_dots():
+                self.state = "win"
 
             if not self.pause and self.state == "play":
                 if not self.collision_with_wall(self.pacman):
@@ -150,6 +156,8 @@ class Game:
 
         if self.state == "menu":
             self.menu.draw()
+        elif self.state == "win" or self.state == "lose":
+            self.result.draw(self.state)
         elif self.state == "play":
             self.map.draw_map()
             self.pacman.draw_pacman()
@@ -207,11 +215,13 @@ class Game:
             if keys[pygame.K_RETURN]:
                 self.state = "play"
 
-        if keys[pygame.K_ESCAPE]:
-            if self.state == "play" or self.state == "lose":
-                self.state = "menu"
-            else:
+        elif self.state == "win" or self.state == "lose":
+            if keys[pygame.K_RETURN]:
+                self.restart()
                 self.state = "play"
+
+        if keys[pygame.K_ESCAPE]:
+            self.state = "menu"
 
     def game_over(self):
         self.score = 0
@@ -342,3 +352,19 @@ class Game:
             return True
         else:
             return False
+
+    def restart(self):
+        self.pacman = Pacman(self.settings, self.screen)
+        self.map = Map(self.settings, self.screen)
+        self.ghosts = []
+        for ghost in ghosts_data:
+            self.ghosts.append(
+                Ghost(
+                    self.settings,
+                    self.screen,
+                    ghost["color"],
+                    ghost["spawn_coords"],
+                    ghost["aggressive_point"],
+                    ghost["name"],
+                )
+            )
