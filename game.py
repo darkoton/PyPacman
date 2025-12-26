@@ -49,6 +49,13 @@ class Game:
             "40": pygame.font.Font("./resources/PressStart2P-Regular.ttf", 40),
         }
 
+        pygame.mixer.init()
+
+        pygame.mixer.music.load("resources/soundtrack.mp3")
+        pygame.mixer.music.set_volume(0.2)  # 0.0 – 1.0
+        pygame.mixer.music.play(-1)  # loop
+        pygame.mixer.music.pause()
+
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.score = 0
@@ -105,14 +112,15 @@ class Game:
 
             coll_ghost = self.collision_with_ghost()
             if coll_ghost and not coll_ghost.is_fright and not coll_ghost.is_dead:
-                self.game_over()
                 self.state = "lose"
+                pygame.mixer.music.stop()
             elif coll_ghost and self.pacman.is_rage and coll_ghost.is_fright:
                 coll_ghost.dead()
                 self.score += 10
 
             if not self.map.check_dots():
                 self.state = "win"
+                pygame.mixer.music.stop()
 
             if not self.pause and self.state == "play":
                 pacman_coords = self.pacman.get_coordinate()
@@ -232,9 +240,6 @@ class Game:
 
         pygame.display.update()
 
-    def new_game(self):
-        self.score = 0
-
     def command_from_keyboard(self, keys):
         if self.state == "play":
             direction = self.pacman.directionWord
@@ -253,6 +258,7 @@ class Game:
         elif self.state == "menu":
             if keys[pygame.K_RETURN]:
                 self.state = "play"
+                pygame.mixer.music.unpause()
 
         elif self.state == "win" or self.state == "lose":
             if keys[pygame.K_RETURN]:
@@ -261,9 +267,7 @@ class Game:
 
         if keys[pygame.K_ESCAPE]:
             self.state = "menu"
-
-    def game_over(self):
-        self.score = 0
+            pygame.mixer.music.pause()
 
     def pause(self):
         pass
@@ -397,6 +401,7 @@ class Game:
         return False
 
     def restart(self):
+        self.score = 0
         self.pacman = Pacman(self.settings, self.screen)
         self.map = Map(self.settings, self.screen)
         self.ghosts = []
@@ -411,3 +416,5 @@ class Game:
                     ghost["name"],
                 )
             )
+
+        pygame.mixer.music.play(-1)
