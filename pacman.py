@@ -21,6 +21,8 @@ class Pacman(Entity):
         self.mouth_speed = 0.03
         self.mouth_opening = False
 
+        self.is_rage = False
+
     # Тут я зробив з допомогою ИИ
     def draw_pacman(self):
         r = self.size / 2

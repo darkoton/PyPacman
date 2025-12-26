@@ -1,5 +1,7 @@
 import pygame
 
+# import math
+
 from entity import Entity
 
 
@@ -30,8 +32,16 @@ class Ghost(Entity):
         self.see_pacman = False
         self.see_pacman_color = (20, 200, 200, 100)
 
+        self.is_fright = False
+        self.is_dead = False
+        self.resurrection_cell = (13, 11)
+
     def draw_ghost(self):
-        ghost_color = self.color
+        ghost_color = (
+            (0, 0, 0)
+            if self.is_dead
+            else (37, 45, 242) if self.is_fright else self.color
+        )
 
         pygame.draw.circle(
             self.screen,
@@ -182,3 +192,10 @@ class Ghost(Entity):
                 directions.append("left")
 
         return directions
+
+    def dead(self):
+        self.is_dead = True
+        self.is_fright = False
+
+    def resurrection(self):
+        self.is_dead = False

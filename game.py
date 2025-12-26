@@ -36,6 +36,8 @@ ghosts_data = [
     },
 ]
 
+RARE_TIMER = pygame.USEREVENT + 1
+
 
 class Game:
     def __init__(self, settings, screen):
@@ -92,17 +94,29 @@ class Game:
                     if event.key == pygame.K_SPACE:
                         self.pause = not self.pause
 
+                if event.type == RARE_TIMER:
+                    self.pacman.is_rage = False
+                    for ghost in self.ghosts:
+                        ghost.is_fright = False
+                    pygame.time.set_timer(RARE_TIMER, 0)
+
             self.draw_game()
             self.command_from_keyboard(pygame.key.get_pressed())
 
-            if self.collision_with_ghost():
+            coll_ghost = self.collision_with_ghost()
+            if coll_ghost and not coll_ghost.is_fright and not coll_ghost.is_dead:
                 self.game_over()
                 self.state = "lose"
+            elif coll_ghost and self.pacman.is_rage and coll_ghost.is_fright:
+                coll_ghost.dead()
+                self.score += 10
 
             if not self.map.check_dots():
                 self.state = "win"
 
             if not self.pause and self.state == "play":
+                pacman_coords = self.pacman.get_coordinate()
+
                 if not self.collision_with_wall(self.pacman):
                     self.pacman.move()
 
@@ -113,10 +127,25 @@ class Game:
                     ]
 
                     if any(check_rotate.values()):
+                        if (
+                            ghost.see_pacman
+                            and not ghost.is_fright
+                            and not ghost.is_dead
+                        ):
 
-                        if ghost.see_pacman:
                             ghost_next_directions = ghost.determine_directions(
-                                self.pacman.get_coordinate()
+                                pacman_coords
+                            )
+                        elif ghost.is_dead:
+                            ghost_next_directions = ghost.determine_directions(
+                                ghost.resurrection_cell
+                            )
+                        elif ghost.is_fright:
+                            ghost_next_directions = ghost.determine_directions(
+                                (
+                                    self.settings.WIDTH_SIZE - pacman_coords[0],
+                                    self.settings.HEIGHT_SIZE - pacman_coords[1],
+                                )
                             )
                         else:
                             ghost_next_directions = ghost.determine_directions()
@@ -139,6 +168,9 @@ class Game:
                     if not self.collision_with_wall(ghost):
                         ghost.move()
 
+                    if ghost.get_coordinate() == ghost.resurrection_cell:
+                        ghost.resurrection()
+
                     if self.collision_with_visor(ghost):
                         ghost.see_pacman = True
                     else:
@@ -147,6 +179,13 @@ class Game:
                 if self.collision_pacman_with_dot():
                     self.map.remove_item(self.pacman.get_coordinate())
                     self.score += 1
+                elif self.collision_pacman_with_boost():
+                    self.map.remove_item(self.pacman.get_coordinate())
+                    self.score += 1
+                    self.pacman.is_rage = True
+                    for ghost in self.ghosts:
+                        ghost.is_fright = True
+                    pygame.time.set_timer(RARE_TIMER, 6000)
 
             pygame.time.wait(self.settings.speed)
             self.clock.tick(self.settings.fps)
@@ -252,10 +291,15 @@ class Game:
     def collision_pacman_with_dot(self):
         pacman_coords = self.pacman.get_coordinate()
 
-        if (
-            self.map.get_element_by_coords(pacman_coords) == "."
-            or self.map.get_element_by_coords(pacman_coords) == "o"
-        ):
+        if self.map.get_element_by_coords(pacman_coords) == ".":
+            return True
+        else:
+            return False
+
+    def collision_pacman_with_boost(self):
+        pacman_coords = self.pacman.get_coordinate()
+
+        if self.map.get_element_by_coords(pacman_coords) == "o":
             return True
         else:
             return False
@@ -344,14 +388,13 @@ class Game:
     def collision_with_ghost(self):
         px, py = self.pacman.get_coordinate()
 
-        if any(
-            abs(gx - px) + abs(gy - py) <= 1
-            for ghost in self.ghosts
-            for gx, gy in [ghost.get_coordinate()]
-        ):
-            return True
-        else:
-            return False
+        for ghost in self.ghosts:
+            gx, gy = ghost.get_coordinate()
+
+            if abs(gx - px) + abs(gy - py) <= 1:
+                return ghost
+
+        return False
 
     def restart(self):
         self.pacman = Pacman(self.settings, self.screen)
